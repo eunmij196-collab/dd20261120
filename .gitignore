@@ -42,3 +42,6 @@ next-env.d.ts
 
 # admin local data store
 /data
+
+# 비밀번호가 들어 있는 설정 안내 (로컬 전용)
+/관리자_설정_안내.md
