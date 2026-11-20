@@ -1,9 +1,6 @@
 /* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import SiteHeader from "./components/SiteHeader";
-import SiteFooter from "./components/SiteFooter";
-import BottomNav from "./components/BottomNav";
 
 export const metadata: Metadata = {
   title: "경남명품향토몰",
@@ -36,12 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="bg-surface text-on-surface flex flex-col min-h-screen selection:bg-secondary-container selection:text-on-secondary-container">
-        <SiteHeader />
-        <main className="flex-1 w-full bg-surface pt-28 pb-20">
-          {children}
-          <SiteFooter />
-        </main>
-        <BottomNav />
+        {children}
       </body>
     </html>
   );

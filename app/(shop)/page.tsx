@@ -1,4 +1,4 @@
-import HolidayGiftHome from "./HolidayGiftHome";
+import HolidayGiftHome from "../HolidayGiftHome";
 
 export default function Home() {
   return <HolidayGiftHome />;
