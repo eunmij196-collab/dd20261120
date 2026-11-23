@@ -18,7 +18,7 @@ export function createSeed(): Db {
       id: "p-gn4", name: "[경남 4선 종합 명품세트] 밀양 사과 & 산청 곶감 & 남해 은멸치 & 하동 수제차",
       region: "경남 통합 명품관", tagline: "밀양 · 산청 · 남해 · 하동",
       description: "경남의 명산과 바다가 빚어낸 4대 대표 특산물을 정갈한 오동나무 함에 담았습니다. 명절 격식 있는 선물로 가장 선호되는 종합 명작입니다.",
-      imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuD8fQKP4JQcxA6qOm5QP-aivlrV-uIs8AxEIkIanzBvnDfp7HrEeNClliJ_DHq8HE1Z8yVeL8MRoU-LvEnpyzen3Ec9EoieXc2lwLxUIy-0RQeAd86mpzPIbQvikA_J3fv4O079s-Ax3mxk5U9GIhSIrmr7VQkMlsbyO4CYs4VWie3amSdyG0G06RhCWHSnytYRDUilUbJNow97JB_adimy2etO5xOWF0EVxltNeJ0",
+      imageUrl: "/products/gn4-set.jpg",
       price: 89000, originalPrice: 105000, badges: ["주력 추천 1위", "보자기 매듭 무료"],
       targets: ["vip", "parents"], stock: 120, coldChain: true,
     }),
