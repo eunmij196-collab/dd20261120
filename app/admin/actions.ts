@@ -1,9 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { checkPassword, endSession, requireAdmin, startSession } from "@/lib/auth";
 import { updateDb } from "@/lib/db";
+import { PRODUCTS_TAG } from "@/lib/shop";
 import { ORDER_STATUSES, TARGETS } from "@/lib/format";
 import type { OrderStatus, Product, Target } from "@/lib/types";
 
@@ -11,6 +12,7 @@ export type FormState = { error?: string } | undefined;
 
 function refresh() {
   revalidatePath("/admin", "layout");
+  updateTag(PRODUCTS_TAG); // 메인 화면 상품 목록도 새로 고침
 }
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
