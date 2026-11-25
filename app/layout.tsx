@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "경남명품향토몰",
   other: { "shell-type": "mobile_tab" },
+  verification: { google: "PdQTpakB40UR8lEAm128HtEjjd-IgI2vfLaO7HC59n0" },
 };
 
 export const viewport: Viewport = {
