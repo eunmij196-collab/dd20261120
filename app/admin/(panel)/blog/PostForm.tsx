@@ -27,7 +27,7 @@ export default function PostForm({ post }: { post?: Post }) {
     <form action={action} className="flex flex-col gap-4">
       {post && <input type="hidden" name="id" value={post.id} />}
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 md:p-5 flex flex-col gap-4">
+      <section className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5 flex flex-col gap-4">
         <Field label="제목 *">
           <input name="title" required maxLength={120} defaultValue={post?.title} className={inputClass} />
         </Field>
@@ -60,7 +60,7 @@ export default function PostForm({ post }: { post?: Post }) {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 md:p-5 flex flex-col gap-2">
+      <section className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5 flex flex-col gap-2">
         <Field
           label="본문 *"
           hint={
@@ -79,7 +79,7 @@ export default function PostForm({ post }: { post?: Post }) {
         </Field>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 md:p-5">
+      <section className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5">
         <fieldset className="flex flex-wrap items-center gap-4">
           <legend className="sr-only">공개 상태</legend>
           <label className="inline-flex items-center gap-1.5">

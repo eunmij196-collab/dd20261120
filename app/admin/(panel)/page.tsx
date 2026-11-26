@@ -35,7 +35,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-space-lg">
         {stats.map((s) => (
-          <Link key={s.label} href={s.href} className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 hover:shadow-md transition-shadow">
+          <Link key={s.label} href={s.href} className="bg-surface-container-lowest border border-hanji rounded-lg p-4 hover:border-secondary transition-colors">
             <p className="font-label-sm text-label-sm text-on-surface-variant">{s.label}</p>
             <p className="font-headline-lg text-headline-lg text-primary mt-1 tabular-nums">{s.value}</p>
             <p className="font-body-sm text-body-sm text-outline mt-0.5">{s.sub}</p>
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-headline-md text-headline-md">재고 부족 상품</h2>
-            <Link href="/admin/products" className="font-label-sm text-label-sm text-secondary">상품 관리 →</Link>
+            <Link href="/admin/products" className="font-label-sm text-label-sm text-secondary">제품 관리 →</Link>
           </div>
           {lowStock.length === 0 ? (
             <p className="text-on-surface-variant font-body-sm text-body-sm py-4">재고가 넉넉합니다.</p>

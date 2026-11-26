@@ -26,7 +26,7 @@ export default function ProductForm({ product }: { product?: Product }) {
     <form action={action} className="flex flex-col gap-4">
       {product && <input type="hidden" name="id" value={product.id} />}
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 md:p-5 grid md:grid-cols-2 gap-4">
+      <section className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5 grid md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
           <Field label="상품명 *">
             <input name="name" required defaultValue={product?.name} className={inputClass} />
@@ -69,7 +69,7 @@ export default function ProductForm({ product }: { product?: Product }) {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 md:p-5 grid md:grid-cols-3 gap-4">
+      <section className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5 grid md:grid-cols-3 gap-4">
         <Field label="판매가 (원) *">
           <input name="price" type="number" min={1} required defaultValue={product?.price} className={inputClass} />
         </Field>
@@ -81,7 +81,7 @@ export default function ProductForm({ product }: { product?: Product }) {
         </Field>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-sm p-4 md:p-5 flex flex-col gap-4">
+      <section className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5 flex flex-col gap-4">
         <Field label="인증·뱃지" hint="쉼표(,)로 구분. 예: 경남도지사 인증, 명인 수작업">
           <input name="badges" defaultValue={product?.badges.join(", ")} className={inputClass} />
         </Field>
@@ -126,7 +126,7 @@ export default function ProductForm({ product }: { product?: Product }) {
           취소
         </Link>
         <button disabled={pending} className={btnPrimary}>
-          {pending ? "저장 중…" : product ? "변경사항 저장" : "상품 등록"}
+          {pending ? "저장 중…" : product ? "변경사항 저장" : "제품 등록"}
         </button>
       </div>
     </form>

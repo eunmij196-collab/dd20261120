@@ -13,6 +13,8 @@ span.material-symbols-outlined {
 
 /* code.html의 tailwind.config 값을 그대로 옮긴 디자인 토큰 */
 @theme {
+  /* DESIGN.md: 카드·입력칸 테두리 (한지 테두리색) */
+  --color-hanji: #e8dfd0;
   --color-tertiary-fixed: #ffdad5;
   --color-on-tertiary: #ffffff;
   --color-outline: #76777d;

@@ -7,7 +7,7 @@ import ConfirmButton from "../../../_components/ConfirmButton";
 import ProductForm from "../ProductForm";
 import { PageTitle } from "../../../_components/ui";
 
-export const metadata: Metadata = { title: "상품 수정" };
+export const metadata: Metadata = { title: "제품 수정" };
 
 export default async function EditProductPage({ params }: PageProps<"/admin/products/[id]">) {
   await requireAdmin();
@@ -18,7 +18,7 @@ export default async function EditProductPage({ params }: PageProps<"/admin/prod
 
   return (
     <>
-      <PageTitle title="상품 수정" desc={product.name}>
+      <PageTitle title="제품 수정" desc={product.name}>
         <form action={deleteProduct}>
           <input type="hidden" name="id" value={product.id} />
           <ConfirmButton

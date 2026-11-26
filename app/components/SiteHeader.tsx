@@ -105,6 +105,12 @@ export default function SiteHeader() {
           >
             블로그
           </Link>
+          <Link
+            className="h-full flex items-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors shrink-0"
+            href="/board"
+          >
+            게시판
+          </Link>
           <a
             className="h-full flex items-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors shrink-0"
             data-path="cs-bulk-orders"

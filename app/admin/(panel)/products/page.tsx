@@ -7,7 +7,7 @@ import { discountRate, won } from "@/lib/format";
 import { toggleProductStatus } from "../../actions";
 import { PageTitle, btnPrimary } from "../../_components/ui";
 
-export const metadata: Metadata = { title: "상품 관리" };
+export const metadata: Metadata = { title: "제품 관리" };
 
 export default async function ProductsPage() {
   await requireAdmin();
@@ -15,10 +15,10 @@ export default async function ProductsPage() {
 
   return (
     <>
-      <PageTitle title="상품 관리" desc={`전체 ${products.length}개 · 판매중 ${products.filter((p) => p.status === "active").length}개`}>
+      <PageTitle title="제품 관리" desc={`전체 ${products.length}개 · 판매중 ${products.filter((p) => p.status === "active").length}개`}>
         <Link href="/admin/products/new" className={btnPrimary}>
           <span className="material-symbols-outlined text-[18px]">add</span>
-          상품 등록
+          제품 등록
         </Link>
       </PageTitle>
 
@@ -29,7 +29,7 @@ export default async function ProductsPage() {
           {products.map((p) => {
             const rate = discountRate(p.price, p.originalPrice);
             return (
-              <li key={p.id} className="bg-surface-container-lowest rounded-2xl shadow-sm p-3 flex items-center gap-3">
+              <li key={p.id} className="bg-surface-container-lowest border border-hanji rounded-lg p-3 flex items-center gap-3">
                 <div className="w-16 h-16 md:w-20 md:h-14 shrink-0 rounded-lg overflow-hidden bg-surface-container">
                   {p.imageUrl && <img src={p.imageUrl} alt="" className="w-full h-full object-cover" />}
                 </div>

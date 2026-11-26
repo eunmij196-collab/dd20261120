@@ -48,7 +48,7 @@ export default async function ShippingPage() {
               </h2>
               <ul className="flex flex-col gap-2">
                 {list.map((o) => (
-                  <li key={o.id} className="bg-surface-container-lowest rounded-2xl shadow-sm p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3">
+                  <li key={o.id} className="bg-surface-container-lowest border border-hanji rounded-lg p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link href={`/admin/orders/${o.id}`} className="font-label-md text-label-md hover:underline">
@@ -95,7 +95,7 @@ export default async function ShippingPage() {
       {inTransit.length > 0 && (
         <section className="mt-space-xl">
           <h2 className="font-headline-md text-headline-md mb-2">배송중</h2>
-          <ul className="bg-surface-container-lowest rounded-2xl shadow-sm divide-y divide-outline-variant/50">
+          <ul className="bg-surface-container-lowest border border-hanji rounded-lg divide-y divide-outline-variant/50">
             {inTransit.map((o) => (
               <li key={o.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 p-3">
                 <Link href={`/admin/orders/${o.id}`} className="font-label-md text-label-md hover:underline">

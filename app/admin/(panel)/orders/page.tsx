@@ -66,7 +66,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
       {filtered.length === 0 ? (
         <p className="text-on-surface-variant py-10 text-center">해당하는 주문이 없습니다.</p>
       ) : (
-        <div className="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hanji rounded-lg overflow-hidden">
           <table className="w-full text-left font-body-sm text-body-sm">
             <thead className="hidden md:table-header-group bg-surface-container-low text-on-surface-variant">
               <tr>
