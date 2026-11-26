@@ -3,7 +3,15 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { updateTag } from "next/cache";
-import { BOARD_TAG, LIMITS, createBoardPost, deleteBoardPostWithPassword, hashIp, recentPostCount } from "@/lib/board";
+import {
+  BOARD_TAG,
+  LIMITS,
+  createBoardPost,
+  deleteBoardPostWithPassword,
+  hashIp,
+  recentPostCount,
+  updateBoardPostWithPassword,
+} from "@/lib/board";
 
 export type BoardFormState = { error?: string } | undefined;
 
@@ -12,6 +20,22 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const clean = (s: string) => s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
 
 const MAX_POSTS_PER_10_MIN = 3;
+
+function checkTitleContent(title: string, content: string) {
+  if (!title) return "제목을 입력하세요.";
+  if (title.length > LIMITS.title) return `제목은 ${LIMITS.title}자 이하로 입력하세요.`;
+  if (!content) return "내용을 입력하세요.";
+  if (content.length > LIMITS.content) return `내용은 ${LIMITS.content}자 이하로 입력하세요.`;
+  return null;
+}
+
+function checkPassword(password: string) {
+  if (!password.trim()) return "비밀번호를 입력하세요.";
+  if (password.length < LIMITS.passwordMin || password.length > LIMITS.passwordMax) {
+    return `비밀번호는 ${LIMITS.passwordMin}~${LIMITS.passwordMax}자로 입력하세요.`;
+  }
+  return null;
+}
 
 export async function writeBoardPost(_prev: BoardFormState, fd: FormData): Promise<BoardFormState> {
   // 자동 등록 프로그램 차단용 숨은 칸: 사람은 비워 둡니다.
@@ -24,13 +48,8 @@ export async function writeBoardPost(_prev: BoardFormState, fd: FormData): Promi
 
   if (!author) return { error: "이름을 입력하세요." };
   if (author.length > LIMITS.author) return { error: `이름은 ${LIMITS.author}자 이하로 입력하세요.` };
-  if (!title) return { error: "제목을 입력하세요." };
-  if (title.length > LIMITS.title) return { error: `제목은 ${LIMITS.title}자 이하로 입력하세요.` };
-  if (!content) return { error: "내용을 입력하세요." };
-  if (content.length > LIMITS.content) return { error: `내용은 ${LIMITS.content}자 이하로 입력하세요.` };
-  if (password.length < LIMITS.passwordMin || password.length > LIMITS.passwordMax) {
-    return { error: `비밀번호는 ${LIMITS.passwordMin}~${LIMITS.passwordMax}자로 입력하세요.` };
-  }
+  const problem = checkTitleContent(title, content) ?? checkPassword(password);
+  if (problem) return { error: problem };
 
   const h = await headers();
   const ip = h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -65,4 +84,27 @@ export async function deleteMyBoardPost(_prev: BoardFormState, fd: FormData): Pr
   if (result === "wrong") return { error: "비밀번호가 맞지 않습니다." };
   updateTag(BOARD_TAG);
   redirect("/board");
+}
+
+export async function editMyBoardPost(_prev: BoardFormState, fd: FormData): Promise<BoardFormState> {
+  const id = str(fd, "id");
+  const title = clean(str(fd, "title"));
+  const content = clean(String(fd.get("content") ?? "")).trim();
+  const password = String(fd.get("password") ?? "");
+
+  const problem = checkTitleContent(title, content);
+  if (problem) return { error: problem };
+  if (!password) return { error: "글을 쓸 때 정한 비밀번호를 입력하세요." };
+
+  let result: "updated" | "wrong" | "missing";
+  try {
+    result = await updateBoardPostWithPassword(id, password, { title, content });
+  } catch (e) {
+    console.error(e);
+    return { error: "수정하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
+  }
+  if (result === "wrong") return { error: "비밀번호가 맞지 않습니다." };
+  if (result === "missing") return { error: "글을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+  updateTag(BOARD_TAG);
+  redirect(`/board/${id}`);
 }

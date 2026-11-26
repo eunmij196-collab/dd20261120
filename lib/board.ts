@@ -109,6 +109,17 @@ export async function deleteBoardPostWithPassword(id: string, password: string) 
   return "deleted" as const;
 }
 
+/** 손님 수정: 비밀번호가 맞을 때만 제목·내용을 고칩니다. 결과: "updated" | "wrong" | "missing" */
+export async function updateBoardPostWithPassword(id: string, password: string, input: { title: string; content: string }) {
+  await ensureTable();
+  const [rows] = await execute([{ sql: "SELECT password_hash FROM board_posts WHERE id = ?", args: [id] }]);
+  const stored = rows[0]?.password_hash;
+  if (!stored) return "missing" as const;
+  if (!(await verifyPassword(password, stored))) return "wrong" as const;
+  await execute([{ sql: "UPDATE board_posts SET title = ?, content = ? WHERE id = ?", args: [input.title, input.content, id] }]);
+  return "updated" as const;
+}
+
 /** 관리자 삭제: 비밀번호 확인 없이 지웁니다. 호출 전에 requireAdmin()을 거쳐야 합니다. */
 export async function deleteBoardPostAsAdmin(id: string) {
   await ensureTable();

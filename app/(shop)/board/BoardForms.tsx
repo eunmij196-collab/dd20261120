@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { LIMITS } from "@/lib/board-limits";
-import { deleteMyBoardPost, writeBoardPost } from "./actions";
+import { deleteMyBoardPost, editMyBoardPost, writeBoardPost } from "./actions";
 
 const input =
   "h-12 px-3 rounded-lg border border-hanji bg-surface-container-lowest text-on-surface placeholder:text-[#8c827a] focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container";
@@ -68,6 +68,52 @@ export function WriteForm() {
         </Link>
         <button disabled={pending} className={primary}>
           {pending ? "등록 중…" : "등록"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export function EditForm({ post }: { post: { id: string; title: string; content: string } }) {
+  const [state, action, pending] = useActionState(editMyBoardPost, undefined);
+  return (
+    <form action={action} className="flex flex-col gap-4">
+      <input type="hidden" name="id" value={post.id} />
+      <div className="bg-surface-container-lowest border border-hanji rounded-lg p-4 md:p-5 flex flex-col gap-4">
+        <Field label="제목 *">
+          <input name="title" required maxLength={LIMITS.title} defaultValue={post.title} className={input} />
+        </Field>
+        <Field label="내용 *">
+          <textarea
+            name="content"
+            required
+            rows={10}
+            maxLength={LIMITS.content}
+            defaultValue={post.content}
+            className={input + " h-auto py-2 leading-relaxed"}
+          />
+        </Field>
+        <Field label="비밀번호 *" hint="글을 쓸 때 정한 비밀번호가 맞아야 저장됩니다.">
+          <input
+            name="password"
+            type="password"
+            required
+            maxLength={LIMITS.passwordMax}
+            autoComplete="current-password"
+            className={input}
+          />
+        </Field>
+      </div>
+      <ErrorText error={state?.error} />
+      <div className="flex gap-2 justify-end">
+        <Link
+          href={`/board/${post.id}`}
+          className="inline-flex items-center h-12 px-5 rounded-lg border-[1.5px] border-[#c5a059] bg-background text-primary-container font-label-lg text-label-lg"
+        >
+          취소
+        </Link>
+        <button disabled={pending} className={primary}>
+          {pending ? "확인 중…" : "수정 저장"}
         </button>
       </div>
     </form>

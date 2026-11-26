@@ -36,6 +36,13 @@ async function PostView({ params }: { params: PageProps<"/board/[id]">["params"]
           {post.content}
         </p>
       </article>
+      <Link
+        href={`/board/${post.id}/edit`}
+        className="self-end inline-flex items-center gap-1 h-12 px-4 rounded-lg border border-hanji bg-surface-container-lowest font-label-md text-label-md text-on-surface hover:border-primary-container"
+      >
+        <span className="material-symbols-outlined text-[18px]">edit</span>
+        내 글 수정하기
+      </Link>
       <DeleteMyPostForm id={post.id} />
     </>
   );
