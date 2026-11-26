@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
 export default function SiteHeader() {
@@ -7,13 +6,16 @@ export default function SiteHeader() {
       <div className="h-28 flex flex-col justify-between">
         <div className="h-16 px-margin-mobile flex items-center justify-between">
           <div className="flex items-center gap-space-sm">
-            <a href="#" data-path="home-feed" className="flex items-center">
-              <img
-                src="https://lh3.googleusercontent.com/aida/ALJJyrBGxc7Jk_cTlPZC-OvZzt8cFPutyX-fjTRSSini5hvghccJ9W7_7Bd6nBSdQ0dmwKsjnXKXuv-1ICXR9TCLZ9FMawEcJuHzwaCdw9IW6kIYYaLWDoXW_lnPEEOdx5egNRosaVLpU8d388aNIY0uzTWFAtmJ_fwGbGbQYlANp5LAQ57NOfPPugQpkET5sC1TYb82R0taL-K44J3xa5qqce5fo5wrgi-Z1xgSRBe4nUTm"
-                alt="JANDA 경남명품향토몰"
-                className="h-8 object-contain"
-              />
-            </a>
+            {/* 글자 로고 (외부 그림 주소가 막혀도 깨지지 않도록 그림 대신 글자로 표시) */}
+            <Link href="/" aria-label="경남명품향토몰 홈" className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="w-8 h-8 shrink-0 rounded-[0.125rem] border border-[#c5a059] text-[#775a19] flex items-center justify-center font-headline-md text-[15px] leading-none"
+              >
+                향
+              </span>
+              <span className="font-headline-md text-[19px] leading-none text-primary tracking-tight">경남명품향토몰</span>
+            </Link>
           </div>
           <div className="flex items-center gap-1">
             <a
@@ -37,15 +39,11 @@ export default function SiteHeader() {
             </a>
             <a
               aria-label="프로필"
-              className="w-11 h-11 flex items-center justify-center text-on-surface pl-1"
+              className="w-11 h-11 flex items-center justify-center text-on-surface hover:text-secondary transition-colors"
               data-path="my-page"
               href="#"
             >
-              <img
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover"
-                src="https://lh3.googleusercontent.com/aida/ALJJyrCTOIw1d-KQAZQf3JWiucDoLB23-ibMQiE1mtnKIvcI1bqKcZtMKJz2PjgFFxg6gNzw6A-XahzxSb2SqT8tgDzNIr_pVpKxWlcVfBKt8fMht_d8niMnwBpFoTCEYfRuEafyT7YtyjaEpQftZ5iryJHX_FqF8zqrLTQhRXplrdi6gM6zZnzA8EbkAHW-KC-R7fLg9FeCXlGDdDoyKYDEhWH8C2LFftEnQK3JKsyxlyJT"
-              />
+              <span className="material-symbols-outlined text-[26px]">account_circle</span>
             </a>
           </div>
         </div>
