@@ -5,6 +5,8 @@ import { formatBoardDate, listBoardPostsForAdmin, type BoardPost } from "@/lib/b
 import { tursoConfigured } from "@/lib/turso";
 import { adminDeleteBoardPost } from "../../board-actions";
 import ConfirmButton from "../../_components/ConfirmButton";
+import TestNotifyButton from "../../_components/TestNotifyButton";
+import { discordConfigured } from "@/lib/notify";
 import { EmptyState, ErrorNotice, PageTitle, btnSecondary, btnSmallDanger, cardClass } from "../../_components/ui";
 
 export const metadata: Metadata = { title: "게시판 관리" };
@@ -34,10 +36,13 @@ export default async function BoardAdminPage() {
         title="게시판 관리"
         desc={`손님 글 ${total}개${total > LIMIT ? ` · 최근 ${LIMIT}개 표시` : ""} · 관리자는 비밀번호 없이 삭제할 수 있습니다`}
       >
-        <Link href="/board" target="_blank" className={btnSecondary}>
-          <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-          게시판 보기
-        </Link>
+        <div className="flex flex-col md:flex-row md:items-start gap-3">
+          <TestNotifyButton configured={discordConfigured()} />
+          <Link href="/board" target="_blank" className={btnSecondary}>
+            <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+            게시판 보기
+          </Link>
+        </div>
       </PageTitle>
 
       {error ? (

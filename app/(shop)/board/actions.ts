@@ -12,6 +12,7 @@ import {
   recentPostCount,
   updateBoardPostWithPassword,
 } from "@/lib/board";
+import { notifyNewBoardPost } from "@/lib/notify";
 
 export type BoardFormState = { error?: string } | undefined;
 
@@ -61,6 +62,7 @@ export async function writeBoardPost(_prev: BoardFormState, fd: FormData): Promi
       return { error: "짧은 시간에 글을 너무 많이 썼습니다. 10분 뒤에 다시 시도해 주세요." };
     }
     id = await createBoardPost({ author, title, content, password, ipHash });
+    notifyNewBoardPost({ id, author, title, content }); // 디스코드 알림 (설정된 경우)
   } catch (e) {
     console.error(e);
     return { error: "글을 등록하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
