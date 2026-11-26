@@ -12,7 +12,7 @@ import {
   recentPostCount,
   updateBoardPostWithPassword,
 } from "@/lib/board";
-import { notifyNewBoardPost } from "@/lib/notify";
+import { notifyBoardPostDeleted, notifyBoardPostEdited, notifyNewBoardPost } from "@/lib/notify";
 
 export type BoardFormState = { error?: string } | undefined;
 
@@ -76,14 +76,15 @@ export async function deleteMyBoardPost(_prev: BoardFormState, fd: FormData): Pr
   const password = String(fd.get("password") ?? "");
   if (!password) return { error: "글을 쓸 때 정한 비밀번호를 입력하세요." };
 
-  let result: "deleted" | "wrong" | "missing";
+  let outcome: Awaited<ReturnType<typeof deleteBoardPostWithPassword>>;
   try {
-    result = await deleteBoardPostWithPassword(id, password);
+    outcome = await deleteBoardPostWithPassword(id, password);
   } catch (e) {
     console.error(e);
     return { error: "삭제하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
   }
-  if (result === "wrong") return { error: "비밀번호가 맞지 않습니다." };
+  if (outcome.result === "wrong") return { error: "비밀번호가 맞지 않습니다." };
+  if (outcome.result === "deleted") notifyBoardPostDeleted({ title: outcome.title, author: outcome.author });
   updateTag(BOARD_TAG);
   redirect("/board");
 }
@@ -98,15 +99,16 @@ export async function editMyBoardPost(_prev: BoardFormState, fd: FormData): Prom
   if (problem) return { error: problem };
   if (!password) return { error: "글을 쓸 때 정한 비밀번호를 입력하세요." };
 
-  let result: "updated" | "wrong" | "missing";
+  let outcome: Awaited<ReturnType<typeof updateBoardPostWithPassword>>;
   try {
-    result = await updateBoardPostWithPassword(id, password, { title, content });
+    outcome = await updateBoardPostWithPassword(id, password, { title, content });
   } catch (e) {
     console.error(e);
     return { error: "수정하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
   }
-  if (result === "wrong") return { error: "비밀번호가 맞지 않습니다." };
-  if (result === "missing") return { error: "글을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+  if (outcome.result === "wrong") return { error: "비밀번호가 맞지 않습니다." };
+  if (outcome.result === "missing") return { error: "글을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+  notifyBoardPostEdited({ id, author: outcome.author, title, content });
   updateTag(BOARD_TAG);
   redirect(`/board/${id}`);
 }

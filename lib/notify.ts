@@ -53,6 +53,72 @@ export function notifyLater(content: string, embed?: Embed) {
 
 // ── 알림 종류 ────────────────────────────────────────
 
+const RED = 0xba1a1a; // 경고 (DESIGN.md error)
+const NAVY = 0x1c2331; // 일반 (DESIGN.md primary)
+
+type Who = { ip: string; place: string; device: string };
+const whoFields = (w: Who) => [
+  { name: "접속 주소", value: w.ip, inline: true },
+  { name: "위치(대략)", value: w.place, inline: true },
+  { name: "기기", value: w.device, inline: true },
+];
+
+export function notifyBoardPostEdited(post: { id: string; author: string; title: string; content: string }) {
+  notifyLater("✏️ 고객 게시판 글이 수정되었습니다.", {
+    title: cut(post.title, 200),
+    url: `${SITE_URL}/board/${post.id}`,
+    description: cut(post.content, 300),
+    fields: [
+      { name: "작성자", value: cut(post.author, 50), inline: true },
+      { name: "관리", value: `[게시판 관리 열기](${SITE_URL}/admin/board)`, inline: true },
+    ],
+    timestamp: new Date().toISOString(),
+  });
+}
+
+export function notifyBoardPostDeleted(post: { author: string; title: string }) {
+  notifyLater("🗑️ 고객이 자기 게시판 글을 삭제했습니다.", {
+    title: cut(post.title, 200),
+    color: NAVY,
+    fields: [{ name: "작성자", value: cut(post.author, 50), inline: true }],
+    timestamp: new Date().toISOString(),
+  });
+}
+
+export function notifyBlogPublished(post: { id: string; title: string; summary: string }) {
+  notifyLater("📢 블로그에 새 글이 공개되었습니다.", {
+    title: cut(post.title, 200),
+    url: `${SITE_URL}/blog/${post.id}`,
+    description: cut(post.summary, 300),
+    timestamp: new Date().toISOString(),
+  });
+}
+
+export function notifyAdminLogin(who: Who) {
+  notifyLater("🔐 관리자 화면에 로그인했습니다. 본인이 아니라면 바로 관리자 비밀번호를 바꾸세요.", {
+    title: "관리자 로그인",
+    url: `${SITE_URL}/admin`,
+    color: NAVY,
+    fields: whoFields(who),
+    timestamp: new Date().toISOString(),
+  });
+}
+
+export function notifyLoginFailures(who: Who, count: number, locked: boolean) {
+  notifyLater(
+    locked
+      ? `🚨 관리자 비밀번호를 ${count}번 틀려 이 접속 주소의 로그인을 잠시 막았습니다.`
+      : `⚠️ 관리자 비밀번호가 ${count}번 틀렸습니다.`,
+    {
+      title: locked ? "로그인 차단" : "로그인 실패 반복",
+      color: RED,
+      description: "본인이 아니라면 누군가 관리자 화면에 들어오려는 것일 수 있습니다. 관리자 비밀번호를 길고 어렵게 바꾸세요.",
+      fields: whoFields(who),
+      timestamp: new Date().toISOString(),
+    },
+  );
+}
+
 export function notifyNewBoardPost(post: { id: string; author: string; title: string; content: string }) {
   notifyLater("📝 고객 게시판에 새 글이 올라왔습니다.", {
     title: cut(post.title, 200),

@@ -7,6 +7,9 @@ import { updateDb } from "@/lib/db";
 import { PRODUCTS_TAG } from "@/lib/shop";
 import { ORDER_STATUSES, TARGETS } from "@/lib/format";
 import type { OrderStatus, Product, Target } from "@/lib/types";
+import { LOCK_AFTER, WINDOW_MINUTES, clearFailures, recentFailures, recordFailure } from "@/lib/login-guard";
+import { notifyAdminLogin, notifyLoginFailures } from "@/lib/notify";
+import { hashKey, requestInfo } from "@/lib/request-info";
 
 export type FormState = { error?: string } | undefined;
 
@@ -23,9 +26,25 @@ export async function login(_prev: FormState, fd: FormData): Promise<FormState> 
   if (!process.env.ADMIN_PASSWORD || !process.env.ADMIN_SESSION_SECRET) {
     return { error: "서버에 ADMIN_PASSWORD / ADMIN_SESSION_SECRET 환경변수가 설정되지 않았습니다." };
   }
+  const who = await requestInfo();
+  const ipKey = hashKey("login", who.ip);
+  const lockedMsg = `비밀번호를 너무 많이 틀렸습니다. ${WINDOW_MINUTES}분 뒤에 다시 시도하세요.`;
+
+  // 같은 접속 주소에서 너무 많이 틀렸으면 잠시 막습니다. (기록을 못 읽으면 막지 않음)
+  const failures = await recentFailures(ipKey).catch(() => 0);
+  if (failures >= LOCK_AFTER) return { error: lockedMsg };
+
   if (!checkPassword(str(fd, "password"))) {
+    const count = await recordFailure(ipKey).catch(() => 0);
+    // 3번째, 그 뒤 5번마다, 차단되는 순간에 알림 (알림이 너무 많이 오지 않도록)
+    if (count === 3 || count === LOCK_AFTER || (count > 3 && count % 5 === 0)) {
+      notifyLoginFailures(who, count, count >= LOCK_AFTER);
+    }
+    if (count >= LOCK_AFTER) return { error: lockedMsg };
     return { error: "비밀번호가 올바르지 않습니다." };
   }
+  await clearFailures(ipKey).catch(() => {});
+  notifyAdminLogin(who);
   await startSession();
   redirect("/admin");
 }

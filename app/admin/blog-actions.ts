@@ -3,7 +3,18 @@
 import { redirect } from "next/navigation";
 import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
-import { POSTS_TAG, createPost, deletePost, safeImageUrl, setPostStatus, updatePost, type PostStatus } from "@/lib/blog";
+import {
+  POSTS_TAG,
+  createPost,
+  deletePost,
+  getPostById,
+  postSummary,
+  safeImageUrl,
+  setPostStatus,
+  updatePost,
+  type PostStatus,
+} from "@/lib/blog";
+import { notifyBlogPublished } from "@/lib/notify";
 
 export type PostFormState = { error?: string } | undefined;
 
@@ -32,9 +43,19 @@ export async function savePost(_prev: PostFormState, fd: FormData): Promise<Post
 
   try {
     if (id) {
-      if (!(await updatePost(id, input))) return { error: "글을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+      const before = await getPostById(id);
+      if (!before || !(await updatePost(id, input))) {
+        return { error: "글을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+      }
+      // 임시저장 → 공개로 바뀔 때만 알림
+      if (before.status !== "published" && input.status === "published") {
+        notifyBlogPublished({ id, title: input.title, summary: postSummary(input) });
+      }
     } else {
-      await createPost(input);
+      const newId = await createPost(input);
+      if (input.status === "published") {
+        notifyBlogPublished({ id: newId, title: input.title, summary: postSummary(input) });
+      }
     }
   } catch (e) {
     console.error(e);
@@ -47,7 +68,13 @@ export async function savePost(_prev: PostFormState, fd: FormData): Promise<Post
 /** 공개 ↔ 임시저장 전환 */
 export async function togglePostStatus(fd: FormData) {
   await requireAdmin();
-  await setPostStatus(str(fd, "id"), str(fd, "status") === "published" ? "draft" : "published");
+  const id = str(fd, "id");
+  const next = str(fd, "status") === "published" ? "draft" : "published";
+  await setPostStatus(id, next);
+  if (next === "published") {
+    const post = await getPostById(id);
+    if (post) notifyBlogPublished({ id, title: post.title, summary: postSummary(post) });
+  }
   refresh();
 }
 
