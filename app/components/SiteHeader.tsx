@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 
 export default function SiteHeader() {
   return (
@@ -98,6 +99,12 @@ export default function SiteHeader() {
           >
             브랜드·산지이야기
           </a>
+          <Link
+            className="h-full flex items-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors shrink-0"
+            href="/blog"
+          >
+            블로그
+          </Link>
           <a
             className="h-full flex items-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors shrink-0"
             data-path="cs-bulk-orders"

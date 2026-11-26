@@ -8,6 +8,7 @@ const items = [
   { href: "/admin/products", label: "상품 관리", icon: "inventory_2" },
   { href: "/admin/orders", label: "주문 관리", icon: "receipt_long" },
   { href: "/admin/shipping", label: "배송 관리", icon: "local_shipping" },
+  { href: "/admin/blog", label: "블로그", icon: "edit_note" },
 ];
 
 export default function AdminNav() {
