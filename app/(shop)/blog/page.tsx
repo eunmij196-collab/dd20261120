@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import Link from "next/link";
-import { formatPostDate, getPublishedPosts } from "@/lib/blog";
+import { formatPostDate, getPublishedPosts, postSummary } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -37,7 +37,7 @@ export default async function BlogPage() {
                 <div className="min-w-0 flex flex-col gap-1">
                   <h2 className="font-label-md text-label-md text-on-surface line-clamp-2">{p.title}</h2>
                   <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
-                    {p.excerpt || p.content.slice(0, 120)}
+                    {postSummary(p, 120)}
                   </p>
                   <p className="font-label-sm text-[12px] text-outline mt-auto">{formatPostDate(p.publishedAt)}</p>
                 </div>

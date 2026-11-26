@@ -150,6 +150,17 @@ export async function getPublishedPost(id: string): Promise<Post | null> {
   }
 }
 
+/** 요약이 없을 때 쓰는 본문 앞부분 (사진 표시·소제목 기호 제거) */
+export function postSummary(post: Pick<Post, "excerpt" | "content">, max = 160) {
+  if (post.excerpt) return post.excerpt;
+  return post.content
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/^#+ |^[-*] /gm, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
 /** 사진 주소로 허용하는 형식: https://… 또는 사이트 내부 경로(/…) */
 export function safeImageUrl(url: string) {
   const u = url.trim();

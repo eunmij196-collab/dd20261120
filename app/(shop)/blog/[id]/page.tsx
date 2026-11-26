@@ -4,24 +4,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PostContent from "@/app/components/PostContent";
-import { formatPostDate, getPublishedPost } from "@/lib/blog";
+import { formatPostDate, getPublishedPost, postSummary } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site";
-
-function summary(excerpt: string, content: string) {
-  if (excerpt) return excerpt;
-  return content
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
-    .replace(/^#+ /gm, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
-}
 
 export async function generateMetadata({ params }: PageProps<"/blog/[id]">): Promise<Metadata> {
   const { id } = await params;
   const post = await getPublishedPost(id);
   if (!post) return { title: "글을 찾을 수 없습니다 | 경남명품향토몰" };
-  const description = summary(post.excerpt, post.content);
+  const description = postSummary(post);
   return {
     metadataBase: new URL(SITE_URL),
     title: `${post.title} | 경남명품향토몰 블로그`,

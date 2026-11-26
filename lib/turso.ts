@@ -1,8 +1,9 @@
 // Turso(libSQL) 데이터베이스 연결. 서버에서만 사용합니다.
 // 접속 정보는 환경변수 TURSO_DATABASE_URL, TURSO_AUTH_TOKEN 에서 읽습니다 (.env.local / Vercel 환경변수).
 
-type Value = string | number | null;
-type Cell = { type: string; value?: string };
+// Buffer(Uint8Array) 값은 BLOB으로 저장되고, 읽을 때는 base64 문자열로 돌아옵니다.
+type Value = string | number | null | Uint8Array;
+type Cell = { type: string; value?: string; base64?: string };
 type Result = { cols: { name: string }[]; rows: Cell[][] };
 
 export function tursoConfigured() {
@@ -12,7 +13,14 @@ export function tursoConfigured() {
 function arg(v: Value) {
   if (v === null) return { type: "null" };
   if (typeof v === "number") return { type: "integer", value: String(Math.trunc(v)) };
+  if (v instanceof Uint8Array) return { type: "blob", base64: Buffer.from(v).toString("base64").replace(/=+$/, "") };
   return { type: "text", value: v };
+}
+
+function cellValue(c: Cell | undefined): string | null {
+  if (!c || c.type === "null") return null;
+  if (c.type === "blob") return c.base64 ?? "";
+  return c.value ?? null;
 }
 
 /** 여러 SQL 문을 한 번에 실행합니다. 하나라도 실패하면 오류를 던집니다. */
@@ -43,7 +51,7 @@ export async function execute(stmts: { sql: string; args?: Value[] }[]): Promise
     const result = r.response?.result;
     out.push(
       (result?.rows ?? []).map((row) =>
-        Object.fromEntries(result!.cols.map((c, i) => [c.name, row[i]?.type === "null" ? null : (row[i]?.value ?? null)])),
+        Object.fromEntries(result!.cols.map((c, i) => [c.name, cellValue(row[i])])),
       ),
     );
   }
