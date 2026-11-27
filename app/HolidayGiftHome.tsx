@@ -65,10 +65,6 @@ export default function HolidayGiftHome({ products }: { products: Product[] }) {
     }
   }
 
-  function directOrder(title: string) {
-    alert(`[${title}] 품격 보자기 포장 옵션과 함께 주문 결제 페이지로 이동합니다.`);
-  }
-
   function submitBulkForm(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     alert("견적서 신청이 완료되었습니다. 담당 MD가 10분 내로 기재하신 연락처로 연락드리겠습니다.");
@@ -217,7 +213,6 @@ export default function HolidayGiftHome({ products }: { products: Product[] }) {
             featured={i === 0}
             hidden={!visible[i]}
             onCart={toggleCartModal}
-            onOrder={directOrder}
           />
         ))}
         {visibleCount === 0 && (

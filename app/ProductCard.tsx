@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import type { Product } from "@/lib/types";
 
 // 메인 화면 상품 카드 (관리자 화면에서 등록·수정한 상품 정보로 그려짐)
@@ -21,13 +22,11 @@ export default function ProductCard({
   featured,
   hidden,
   onCart,
-  onOrder,
 }: {
   product: Product;
   featured: boolean;
   hidden: boolean;
   onCart: (title: string, price: string) => void;
-  onOrder: (title: string) => void;
 }) {
   const rate = discountRate(p.price, p.originalPrice);
   const soldOut = p.stock <= 0;
@@ -54,7 +53,7 @@ export default function ProductCard({
           ))}
         </div>
       )}
-      <div className="relative w-full aspect-[16/10] rounded-lg overflow-hidden bg-surface-container">
+      <Link href={`/products/${p.id}`} className="relative block w-full aspect-[16/10] rounded-lg overflow-hidden bg-surface-container">
         {p.imageUrl ? (
           <img className={"w-full h-full object-cover" + (soldOut ? " opacity-60" : "")} src={p.imageUrl} alt={p.name} />
         ) : (
@@ -75,13 +74,15 @@ export default function ProductCard({
             <span>무료 냉장특송</span>
           </div>
         )}
-      </div>
+      </Link>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
           <span className="px-1.5 py-0.5 rounded bg-surface-container font-medium text-secondary">{p.region}</span>
           {p.tagline && <span>{p.tagline}</span>}
         </div>
-        <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold leading-snug">{p.name}</h2>
+        <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold leading-snug">
+          <Link href={`/products/${p.id}`} className="hover:underline">{p.name}</Link>
+        </h2>
         {p.description && (
           <p className="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">{p.description}</p>
         )}
@@ -115,17 +116,23 @@ export default function ProductCard({
             <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
             <span>{featured ? "장바구니 담기" : "담기"}</span>
           </button>
-          <button
-            className="h-11 rounded-lg bg-primary-container text-surface font-label-md text-label-md flex items-center justify-center gap-1 active:opacity-90 shadow-sm transition-all disabled:opacity-50"
-            onClick={() => onOrder(p.name)}
-            disabled={soldOut}
-            type="button"
-          >
-            {featured && (
-              <span className="material-symbols-outlined text-[18px]">card_giftcard</span>
-            )}
-            <span>{soldOut ? "품절" : featured ? "보자기 선물 주문" : "바로 주문하기"}</span>
-          </button>
+          {soldOut ? (
+            <button
+              className="h-11 rounded-lg bg-primary-container text-surface font-label-md text-label-md flex items-center justify-center gap-1 shadow-sm disabled:opacity-50"
+              disabled
+              type="button"
+            >
+              품절
+            </button>
+          ) : (
+            <Link
+              href={`/products/${p.id}`}
+              className="h-11 rounded-lg bg-primary-container text-surface font-label-md text-label-md flex items-center justify-center gap-1 active:opacity-90 shadow-sm transition-all"
+            >
+              {featured && <span className="material-symbols-outlined text-[18px]">card_giftcard</span>}
+              <span>{featured ? "보자기 선물 주문" : "바로 주문하기"}</span>
+            </Link>
+          )}
         </div>
       </div>
     </article>
