@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { readDb } from "@/lib/db";
+import { listProducts } from "@/lib/products";
 import { formatDay, todayKst } from "@/lib/format";
 import type { Order } from "@/lib/types";
 import { setOrderStatus } from "../../actions";
@@ -12,7 +13,7 @@ export const metadata: Metadata = { title: "배송 관리" };
 
 export default async function ShippingPage() {
   await requireAdmin();
-  const { orders, products } = await readDb();
+  const [{ orders }, products] = await Promise.all([readDb(), listProducts().catch(() => [])]);
   const today = todayKst();
   const isCold = (o: Order) => o.items.some((i) => products.find((p) => p.id === i.productId)?.coldChain);
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { readDb } from "@/lib/db";
+import { listProducts } from "@/lib/products";
 import { formatDay, todayKst, won } from "@/lib/format";
 import { Card, PageTitle, SampleNotice, StatusBadge } from "../_components/ui";
 
@@ -8,7 +9,7 @@ const LOW_STOCK = 10;
 
 export default async function DashboardPage() {
   await requireAdmin();
-  const { products, orders } = await readDb();
+  const [{ orders }, products] = await Promise.all([readDb(), listProducts()]);
 
   const today = todayKst();
   const live = orders.filter((o) => o.status !== "cancelled");

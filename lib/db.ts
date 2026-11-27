@@ -27,6 +27,11 @@ async function redis<T>(command: (string | number)[]): Promise<T> {
   return json.result as T;
 }
 
+/** 예전 저장소(Redis)가 연결되어 있는지 (실제 사이트에서만 true) */
+export function redisConfigured() {
+  return Boolean(REDIS_URL && REDIS_TOKEN);
+}
+
 // ── 읽기·쓰기 ─────────────────────────────────────────
 
 async function rawRead(): Promise<string | null> {

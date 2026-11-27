@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { readDb } from "@/lib/db";
+import { listProducts } from "@/lib/products";
 import { discountRate, won } from "@/lib/format";
 import { toggleProductStatus } from "../../actions";
 import { PageTitle, btnPrimary } from "../../_components/ui";
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "제품 관리" };
 
 export default async function ProductsPage() {
   await requireAdmin();
-  const { products } = await readDb();
+  const products = await listProducts();
 
   return (
     <>

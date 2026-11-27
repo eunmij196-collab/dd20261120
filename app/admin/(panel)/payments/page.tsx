@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { readDb } from "@/lib/db";
+import { listProducts } from "@/lib/products";
 import { formatDateTime, won } from "@/lib/format";
 import { listOrders, ORDER_STATUS_LABEL, type PaymentOrderStatus } from "@/lib/orders";
 import { tossConfigured } from "@/lib/toss";
@@ -34,7 +34,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/admin/p
     console.error(e);
     loadError = "결제 주문을 불러오지 못했습니다. 데이터베이스(Turso) 연결을 확인하세요.";
   }
-  const productName = new Map((await readDb().catch(() => ({ products: [] }))).products.map((p) => [p.id, p.name]));
+  const productName = new Map((await listProducts().catch(() => [])).map((p) => [p.id, p.name]));
 
   const filtered = status === "all" ? orders : orders.filter((o) => o.status === status);
   const paid = orders.filter((o) => o.status === "paid");

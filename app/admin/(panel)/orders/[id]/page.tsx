@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { readDb } from "@/lib/db";
+import { listProducts } from "@/lib/products";
 import { formatDateTime, formatDay, won } from "@/lib/format";
 import { Card, PageTitle, StatusBadge } from "../../../_components/ui";
 import OrderEditForm from "./OrderEditForm";
@@ -21,7 +22,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 export default async function OrderDetailPage({ params }: PageProps<"/admin/orders/[id]">) {
   await requireAdmin();
   const { id } = await params;
-  const { orders, products } = await readDb();
+  const [{ orders }, products] = await Promise.all([readDb(), listProducts().catch(() => [])]);
   const order = orders.find((o) => o.id === id);
   if (!order) notFound();
   const coldChain = order.items.some((i) => products.find((p) => p.id === i.productId)?.coldChain);

@@ -1,6 +1,6 @@
 "use server";
 
-import { readDb } from "@/lib/db";
+import { getProduct } from "@/lib/products";
 import { createPendingOrder } from "@/lib/orders";
 import { tossConfigured } from "@/lib/toss";
 
@@ -22,7 +22,7 @@ export async function startCheckout(productId: string, buyerNameRaw: string): Pr
   if (!buyerName) return { ok: false, error: "주문하시는 분 이름을 입력하세요." };
   if (buyerName.length > 30) return { ok: false, error: "이름은 30자 이하로 입력하세요." };
 
-  const product = (await readDb()).products.find((p) => p.id === String(productId));
+  const product = await getProduct(String(productId));
   if (!product || product.status !== "active") return { ok: false, error: "판매 중인 상품이 아닙니다." };
   if (product.stock <= 0) return { ok: false, error: "품절된 상품입니다." };
   if (!Number.isInteger(product.price) || product.price < 100) return { ok: false, error: "상품 가격을 확인할 수 없습니다." };

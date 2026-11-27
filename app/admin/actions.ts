@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath, updateTag } from "next/cache";
 import { checkPassword, endSession, requireAdmin, startSession } from "@/lib/auth";
 import { updateDb } from "@/lib/db";
+import { createProduct, removeProduct, toggleProduct, updateProduct } from "@/lib/products";
 import { PRODUCTS_TAG } from "@/lib/shop";
 import { ORDER_STATUSES, TARGETS } from "@/lib/format";
 import type { OrderStatus, Product, Target } from "@/lib/types";
@@ -88,18 +89,11 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
     coldChain: fd.get("coldChain") === "on",
   };
 
-  const notFound = await updateDb((db) => {
-    const now = new Date().toISOString();
-    if (id) {
-      const p = db.products.find((x) => x.id === id);
-      if (!p) return true;
-      Object.assign(p, fields, { updatedAt: now });
-    } else {
-      db.products.unshift({ id: `p-${Date.now().toString(36)}`, ...fields, createdAt: now, updatedAt: now });
-    }
-    return false;
-  });
-  if (notFound) return { error: "상품을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+  if (id) {
+    if (!(await updateProduct(id, fields))) return { error: "상품을 찾을 수 없습니다. 이미 삭제되었을 수 있습니다." };
+  } else {
+    await createProduct(fields);
+  }
 
   refresh();
   redirect("/admin/products");
@@ -108,22 +102,14 @@ export async function saveProduct(_prev: FormState, fd: FormData): Promise<FormS
 export async function toggleProductStatus(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
-  await updateDb((db) => {
-    const p = db.products.find((x) => x.id === id);
-    if (p) {
-      p.status = p.status === "active" ? "hidden" : "active";
-      p.updatedAt = new Date().toISOString();
-    }
-  });
+  await toggleProduct(id);
   refresh();
 }
 
 export async function deleteProduct(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
-  await updateDb((db) => {
-    db.products = db.products.filter((x) => x.id !== id);
-  });
+  await removeProduct(id);
   refresh();
   redirect("/admin/products");
 }

@@ -2,7 +2,7 @@
 // 1) 주문을 찾고  2) 금액이 주문과 같은지 확인하고  3) 토스 결제 승인 API를 부른 뒤  4) 결제완료로 바꿉니다.
 import { getOrderByNo, moveOrderStatus, type PaymentOrder } from "./orders";
 import { confirmTossPayment } from "./toss";
-import { updateDb } from "./db";
+import { decreaseStock } from "./products";
 
 export type CheckoutOutcome = { ok: true; order: PaymentOrder; justPaid?: boolean } | { ok: false; message: string; order?: PaymentOrder };
 
@@ -59,14 +59,4 @@ export async function completeCheckout(params: {
     order: { ...order, status: "failed" },
     message: result.ok ? `결제가 완료되지 않았습니다. (상태: ${result.status})` : result.message,
   };
-}
-
-async function decreaseStock(productId: string) {
-  await updateDb((db) => {
-    const p = db.products.find((x) => x.id === productId);
-    if (p) {
-      p.stock = Math.max(0, p.stock - 1);
-      p.updatedAt = new Date().toISOString();
-    }
-  });
 }

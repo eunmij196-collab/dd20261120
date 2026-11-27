@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { readDb } from "@/lib/db";
+import { getProduct } from "@/lib/products";
 import { deleteProduct } from "../../../actions";
 import ConfirmButton from "../../../_components/ConfirmButton";
 import ProductForm from "../ProductForm";
@@ -12,8 +12,7 @@ export const metadata: Metadata = { title: "제품 수정" };
 export default async function EditProductPage({ params }: PageProps<"/admin/products/[id]">) {
   await requireAdmin();
   const { id } = await params;
-  const { products } = await readDb();
-  const product = products.find((p) => p.id === id);
+  const product = await getProduct(id);
   if (!product) notFound();
 
   return (
