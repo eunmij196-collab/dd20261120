@@ -1,13 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { startCheckout } from "../actions";
+import { useEffect, useRef, useState } from "react";
+import { startCheckout, type StartCheckoutResult } from "../actions";
 
-// 토스페이먼츠 결제창 SDK (v2) — 필요할 때만 불러옵니다.
+// 토스페이먼츠 SDK (v2) — 필요할 때만 불러옵니다.
+//  - 결제위젯 키(…_gck_…): 이 화면 안에 결제수단·약관 위젯을 그린 뒤 결제
+//  - API 개별 연동 키(…_ck_…): 토스 결제창을 바로 띄워 결제
+type Widgets = {
+  setAmount: (a: { currency: string; value: number }) => Promise<void>;
+  renderPaymentMethods: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
+  renderAgreement: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
+  requestPayment: (o: Record<string, unknown>) => Promise<void>;
+};
 type TossPaymentsFn = ((clientKey: string) => {
-  payment: (o: { customerKey: string }) => {
-    requestPayment: (o: Record<string, unknown>) => Promise<void>;
-  };
+  payment: (o: { customerKey: string }) => { requestPayment: (o: Record<string, unknown>) => Promise<void> };
+  widgets: (o: { customerKey: string }) => Widgets;
 }) & { ANONYMOUS: string };
 
 declare global {
@@ -32,6 +39,25 @@ function loadTossSdk() {
   return sdkPromise;
 }
 
+type Order = Extract<StartCheckoutResult, { ok: true }>;
+
+function paymentRequest(o: Order) {
+  return {
+    orderId: o.orderNo,
+    orderName: o.orderName,
+    customerName: o.buyerName,
+    successUrl: `${window.location.origin}/order/confirm`,
+    failUrl: `${window.location.origin}/order/fail`,
+  };
+}
+
+function errorText(e: unknown) {
+  const code = (e as { code?: string })?.code;
+  if (code === "USER_CANCEL" || code === "PAY_PROCESS_CANCELED") return "결제를 취소했습니다.";
+  console.error(e);
+  return (e as { message?: string })?.message || "결제를 진행하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
 export default function BuyButton({
   productId,
   clientKey,
@@ -44,6 +70,8 @@ export default function BuyButton({
   const [buyerName, setBuyerName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [widgetOrder, setWidgetOrder] = useState<Order | null>(null);
+  const useWidget = /_gck_/.test(clientKey);
 
   async function buy() {
     setError("");
@@ -55,26 +83,14 @@ export default function BuyButton({
       const res = await startCheckout(productId, buyerName);
       if (!res.ok) return setError(res.error);
 
-      // 2) 토스 결제창 띄우기
+      // 2) 결제위젯 키면 결제수단 선택 창을, 아니면 토스 결제창을 띄웁니다.
+      if (useWidget) return setWidgetOrder(res);
       const TossPayments = await loadTossSdk();
-      const payment = TossPayments(clientKey).payment({ customerKey: TossPayments.ANONYMOUS });
-      await payment.requestPayment({
-        method: "CARD",
-        amount: { currency: "KRW", value: res.amount },
-        orderId: res.orderNo,
-        orderName: res.orderName,
-        customerName: res.buyerName,
-        successUrl: `${window.location.origin}/order/confirm`,
-        failUrl: `${window.location.origin}/order/fail`,
-      });
+      await TossPayments(clientKey)
+        .payment({ customerKey: TossPayments.ANONYMOUS })
+        .requestPayment({ method: "CARD", amount: { currency: "KRW", value: res.amount }, ...paymentRequest(res) });
     } catch (e) {
-      const code = (e as { code?: string })?.code;
-      if (code === "USER_CANCEL" || code === "PAY_PROCESS_CANCELED") {
-        setError("결제를 취소했습니다.");
-      } else {
-        console.error(e);
-        setError((e as { message?: string })?.message || "결제창을 열지 못했습니다. 잠시 후 다시 시도해 주세요.");
-      }
+      setError(errorText(e));
     } finally {
       setBusy(false);
     }
@@ -106,8 +122,103 @@ export default function BuyButton({
         className="h-14 rounded-lg bg-primary-container text-surface font-label-md text-label-md font-bold flex items-center justify-center gap-1.5 shadow-sm active:opacity-90 disabled:opacity-50"
       >
         <span className="material-symbols-outlined text-[20px]">credit_card</span>
-        {soldOut ? "품절" : busy ? "결제창을 여는 중…" : "구매하기"}
+        {soldOut ? "품절" : busy ? "주문을 준비하는 중…" : "구매하기"}
       </button>
+
+      {widgetOrder && (
+        <WidgetSheet
+          clientKey={clientKey}
+          order={widgetOrder}
+          onClose={(msg) => {
+            setWidgetOrder(null);
+            if (msg) setError(msg);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/** 결제위젯: 결제수단·약관을 화면 아래에서 올라오는 창에 그리고, 결제하기 버튼으로 결제합니다. */
+function WidgetSheet({
+  clientKey,
+  order,
+  onClose,
+}: {
+  clientKey: string;
+  order: Order;
+  onClose: (message?: string) => void;
+}) {
+  const widgetsRef = useRef<Widgets | null>(null);
+  const [ready, setReady] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const TossPayments = await loadTossSdk();
+        const widgets = TossPayments(clientKey).widgets({ customerKey: TossPayments.ANONYMOUS });
+        await widgets.setAmount({ currency: "KRW", value: order.amount });
+        await Promise.all([
+          widgets.renderPaymentMethods({ selector: "#toss-payment-method", variantKey: "DEFAULT" }),
+          widgets.renderAgreement({ selector: "#toss-agreement", variantKey: "AGREEMENT" }),
+        ]);
+        if (cancelled) return;
+        widgetsRef.current = widgets;
+        setReady(true);
+      } catch (e) {
+        if (!cancelled) setError(errorText(e));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [clientKey, order.amount]);
+
+  async function pay() {
+    if (!widgetsRef.current) return;
+    setError("");
+    setPaying(true);
+    try {
+      await widgetsRef.current.requestPayment(paymentRequest(order));
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-label="결제">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl md:rounded-2xl bg-white p-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-label-md text-label-md text-on-surface-variant">{order.orderName}</p>
+            <p className="font-headline-md text-headline-md text-on-surface font-bold">{order.amount.toLocaleString("ko-KR")}원</p>
+          </div>
+          <button type="button" className="p-2 text-on-surface-variant" onClick={() => onClose()} aria-label="닫기">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        {!ready && !error && <p className="py-8 text-center text-on-surface-variant">결제수단을 불러오는 중…</p>}
+        <div id="toss-payment-method" />
+        <div id="toss-agreement" />
+        {error && (
+          <p className="font-body-sm text-body-sm text-error" role="alert">
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={pay}
+          disabled={!ready || paying}
+          className="h-14 rounded-lg bg-primary-container text-surface font-label-md text-label-md font-bold disabled:opacity-50"
+        >
+          {paying ? "결제 진행 중…" : `${order.amount.toLocaleString("ko-KR")}원 결제하기`}
+        </button>
+      </div>
     </div>
   );
 }
