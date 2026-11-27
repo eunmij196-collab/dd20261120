@@ -191,8 +191,8 @@ function WidgetSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-label="결제">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl md:rounded-2xl bg-white p-4 flex flex-col gap-3">
+    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-label="결제">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl md:rounded-2xl bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
             <p className="font-label-md text-label-md text-on-surface-variant">{order.orderName}</p>
