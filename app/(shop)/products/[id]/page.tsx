@@ -6,7 +6,6 @@ import { Suspense } from "react";
 import { getShopProducts } from "@/lib/shop";
 import { SITE_URL } from "@/lib/site";
 import { tossClientKey } from "@/lib/toss";
-import { paymentsEnabled } from "@/lib/settings";
 import BuyButton from "./BuyButton";
 
 const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
@@ -32,7 +31,6 @@ async function ProductView({ params }: { params: PageProps<"/products/[id]">["pa
   const { id } = await params;
   const p = await findProduct(id);
   if (!p) notFound();
-  const canPay = await paymentsEnabled();
 
   const soldOut = p.stock <= 0;
   const rate = p.originalPrice && p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
@@ -84,19 +82,7 @@ async function ProductView({ params }: { params: PageProps<"/products/[id]">["pa
         <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-line">{p.description}</p>
       )}
 
-      {canPay ? (
-        <BuyButton productId={p.id} clientKey={tossClientKey()} soldOut={soldOut} />
-      ) : (
-        <div className="p-4 rounded-lg bg-surface-container-low flex flex-col gap-1 text-center">
-          <p className="font-label-md text-label-md text-on-surface font-bold">지금은 온라인 결제를 잠시 쉬고 있어요</p>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            주문은 전화로 도와드릴게요 ·{" "}
-            <a href="tel:055-123-4567" className="text-secondary font-semibold underline">
-              055-123-4567
-            </a>
-          </p>
-        </div>
-      )}
+      <BuyButton productId={p.id} clientKey={tossClientKey()} soldOut={soldOut} />
     </article>
   );
 }

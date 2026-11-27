@@ -6,7 +6,6 @@ import { checkPassword, endSession, requireAdmin, startSession } from "@/lib/aut
 import { updateDb } from "@/lib/db";
 import { createProduct, removeProduct, toggleProduct, updateProduct } from "@/lib/products";
 import { PRODUCTS_TAG } from "@/lib/shop";
-import { SETTINGS_TAG, setPaymentsEnabled } from "@/lib/settings";
 import { ORDER_STATUSES, TARGETS } from "@/lib/format";
 import type { OrderStatus, Product, Target } from "@/lib/types";
 import { LOCK_AFTER, WINDOW_MINUTES, clearFailures, recentFailures, recordFailure } from "@/lib/login-guard";
@@ -113,15 +112,6 @@ export async function deleteProduct(fd: FormData) {
   await removeProduct(id);
   refresh();
   redirect("/admin/products");
-}
-
-// ── 결제 켜기·끄기 ────────────────────────────────────
-
-export async function setPayments(fd: FormData) {
-  await requireAdmin();
-  await setPaymentsEnabled(str(fd, "enabled") === "on");
-  updateTag(SETTINGS_TAG); // 쇼핑몰 상세 화면에 바로 반영
-  revalidatePath("/admin", "layout");
 }
 
 // ── 주문·배송 ─────────────────────────────────────────

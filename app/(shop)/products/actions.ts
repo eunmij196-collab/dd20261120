@@ -3,7 +3,6 @@
 import { getProduct } from "@/lib/products";
 import { createPendingOrder } from "@/lib/orders";
 import { tossConfigured } from "@/lib/toss";
-import { paymentsEnabledFresh } from "@/lib/settings";
 
 export type StartCheckoutResult =
   | { ok: true; orderNo: string; amount: number; orderName: string; buyerName: string }
@@ -18,10 +17,6 @@ const clean = (s: string) => s.replace(/[\u0000-\u001F\u007F]/g, "").trim();
  */
 export async function startCheckout(productId: string, buyerNameRaw: string): Promise<StartCheckoutResult> {
   if (!tossConfigured()) return { ok: false, error: "결제 설정이 아직 완료되지 않았습니다. 잠시 후 다시 시도해 주세요." };
-
-  if (!(await paymentsEnabledFresh().catch(() => false))) {
-    return { ok: false, error: "지금은 온라인 결제를 잠시 쉬고 있습니다. 전화로 주문해 주세요." };
-  }
 
   const buyerName = clean(String(buyerNameRaw ?? ""));
   if (!buyerName) return { ok: false, error: "주문하시는 분 이름을 입력하세요." };

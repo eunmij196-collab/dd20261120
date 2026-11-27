@@ -5,8 +5,6 @@ import { listProducts } from "@/lib/products";
 import { formatDateTime, won } from "@/lib/format";
 import { listOrders, ORDER_STATUS_LABEL, type PaymentOrderStatus } from "@/lib/orders";
 import { tossConfigured } from "@/lib/toss";
-import { paymentsEnabledFresh } from "@/lib/settings";
-import { setPayments } from "../../actions";
 import { ErrorNotice, PageTitle } from "../../_components/ui";
 
 export const metadata: Metadata = { title: "결제 주문" };
@@ -38,8 +36,6 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/admin/p
   }
   const productName = new Map((await listProducts().catch(() => [])).map((p) => [p.id, p.name]));
 
-  const enabled = await paymentsEnabledFresh().catch(() => false);
-
   const filtered = status === "all" ? orders : orders.filter((o) => o.status === status);
   const paid = orders.filter((o) => o.status === "paid");
   const paidTotal = paid.reduce((sum, o) => sum + o.amount, 0);
@@ -54,39 +50,6 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/admin/p
         </p>
       )}
       {loadError && <ErrorNotice>{loadError}</ErrorNotice>}
-
-      <form
-        action={setPayments}
-        className="mb-space-md p-4 rounded-lg border border-hanji bg-surface-container-lowest flex flex-wrap items-center justify-between gap-3"
-      >
-        <div>
-          <p className="font-label-md text-label-md text-on-surface font-bold">
-            온라인 결제{" "}
-            <span className={enabled ? "text-primary" : "text-error"}>{enabled ? "켜짐 (ON)" : "꺼짐 (OFF)"}</span>
-          </p>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            {enabled
-              ? "손님이 상품 상세 화면에서 구매하기로 결제할 수 있습니다."
-              : "구매하기 버튼 대신 '온라인 결제를 잠시 쉬고 있어요' 안내가 보입니다."}
-          </p>
-        </div>
-        <input type="hidden" name="enabled" value={enabled ? "off" : "on"} />
-        <button
-          role="switch"
-          aria-checked={enabled}
-          aria-label="온라인 결제 켜기/끄기"
-          className={
-            "relative inline-flex h-9 w-16 shrink-0 items-center rounded-full transition-colors " +
-            (enabled ? "bg-primary-container" : "bg-outline-variant")
-          }
-        >
-          <span
-            className={
-              "inline-block h-7 w-7 rounded-full bg-white shadow transition-transform " + (enabled ? "translate-x-8" : "translate-x-1")
-            }
-          />
-        </button>
-      </form>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1 mb-space-md">
         {(["all", ...STATUSES] as const).map((s) => (
