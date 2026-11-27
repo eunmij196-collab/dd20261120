@@ -17,6 +17,7 @@ const groups = [
     items: [
       { href: "/admin", label: "대시보드", icon: "dashboard" },
       { href: "/admin/orders", label: "주문 관리", icon: "receipt_long" },
+      { href: "/admin/payments", label: "결제 주문", icon: "credit_card" },
       { href: "/admin/shipping", label: "배송 관리", icon: "local_shipping" },
     ],
   },

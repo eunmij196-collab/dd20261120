@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { completeCheckout } from "@/lib/checkout";
-import { ORDER_STATUS_LABEL } from "@/lib/orders";
+import { getOrderByNo, ORDER_STATUS_LABEL } from "@/lib/orders";
 import { getShopProducts } from "@/lib/shop";
 
+// 결제 결과 화면 (보여주기만 합니다). 실제 승인 처리는 /order/confirm 에서 끝난 상태로 옵니다.
 export const metadata: Metadata = { title: "결제 결과 | 경남명품향토몰", robots: { index: false } };
 
 const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
@@ -12,26 +12,24 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 
 async function Result({ searchParams }: { searchParams: PageProps<"/order/success">["searchParams"] }) {
   const sp = await searchParams;
-  const outcome = await completeCheckout({
-    paymentKey: one(sp.paymentKey),
-    orderId: one(sp.orderId),
-    amount: one(sp.amount),
-  });
-  const order = outcome.order;
+  const orderId = one(sp.orderId);
+  const order = orderId ? await getOrderByNo(orderId).catch(() => null) : null;
+  const paid = order?.status === "paid";
+  const message = paid ? "" : one(sp.error) || (order ? "" : "주문을 찾을 수 없습니다.");
   const productName = order ? (await getShopProducts()).find((p) => p.id === order.productId)?.name : undefined;
 
   return (
     <div className="flex flex-col items-center gap-space-md text-center">
       <span
-        className={"material-symbols-outlined text-[56px] " + (outcome.ok ? "text-primary" : "text-error")}
+        className={"material-symbols-outlined text-[56px] " + (paid ? "text-primary" : "text-error")}
         style={{ fontVariationSettings: '"FILL" 1' }}
       >
-        {outcome.ok ? "check_circle" : "error"}
+        {paid ? "check_circle" : "error"}
       </span>
       <h1 className="font-headline-md text-headline-md text-on-surface font-bold">
-        {outcome.ok ? "결제가 완료되었습니다" : "결제를 완료하지 못했습니다"}
+        {paid ? "결제가 완료되었습니다" : "결제를 완료하지 못했습니다"}
       </h1>
-      {!outcome.ok && <p className="font-body-md text-body-md text-on-surface-variant">{outcome.message}</p>}
+      {message && <p className="font-body-md text-body-md text-on-surface-variant">{message}</p>}
 
       {order && (
         <dl className="w-full grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 p-4 rounded-lg bg-surface-container-low text-left font-body-sm text-body-sm">

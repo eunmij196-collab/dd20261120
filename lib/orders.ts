@@ -119,3 +119,10 @@ export async function moveOrderStatus(
   ]);
   return rows.length > 0;
 }
+
+/** 최근 주문 목록 (관리자 화면용) */
+export async function listOrders(limit = 300) {
+  await ensureOrdersTable();
+  const [rows] = await execute([{ sql: "SELECT * FROM orders ORDER BY created_at DESC LIMIT ?", args: [limit] }]);
+  return rows.map(toOrder);
+}

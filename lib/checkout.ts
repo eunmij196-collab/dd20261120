@@ -2,8 +2,9 @@
 // 1) 주문을 찾고  2) 금액이 주문과 같은지 확인하고  3) 토스 결제 승인 API를 부른 뒤  4) 결제완료로 바꿉니다.
 import { getOrderByNo, moveOrderStatus, type PaymentOrder } from "./orders";
 import { confirmTossPayment } from "./toss";
+import { updateDb } from "./db";
 
-export type CheckoutOutcome = { ok: true; order: PaymentOrder } | { ok: false; message: string; order?: PaymentOrder };
+export type CheckoutOutcome = { ok: true; order: PaymentOrder; justPaid?: boolean } | { ok: false; message: string; order?: PaymentOrder };
 
 export async function completeCheckout(params: {
   paymentKey: string;
@@ -47,7 +48,9 @@ export async function completeCheckout(params: {
 
   if (result.ok && result.status === "DONE" && result.orderId === orderId && result.totalAmount === order.amount) {
     await moveOrderStatus(orderId, "confirming", "paid", paymentKey);
-    return { ok: true, order: { ...order, status: "paid", paymentKey } };
+    // 결제완료로 바뀐 이 순간에 한 번만 재고를 1개 줄입니다.
+    await decreaseStock(order.productId).catch((e) => console.error("재고 차감 실패:", order.orderNo, e));
+    return { ok: true, order: { ...order, status: "paid", paymentKey }, justPaid: true };
   }
 
   await moveOrderStatus(orderId, "confirming", "failed", paymentKey);
@@ -56,4 +59,14 @@ export async function completeCheckout(params: {
     order: { ...order, status: "failed" },
     message: result.ok ? `결제가 완료되지 않았습니다. (상태: ${result.status})` : result.message,
   };
+}
+
+async function decreaseStock(productId: string) {
+  await updateDb((db) => {
+    const p = db.products.find((x) => x.id === productId);
+    if (p) {
+      p.stock = Math.max(0, p.stock - 1);
+      p.updatedAt = new Date().toISOString();
+    }
+  });
 }

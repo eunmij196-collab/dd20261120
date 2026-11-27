@@ -64,7 +64,7 @@ export default function BuyButton({
         orderId: res.orderNo,
         orderName: res.orderName,
         customerName: res.buyerName,
-        successUrl: `${window.location.origin}/order/success`,
+        successUrl: `${window.location.origin}/order/confirm`,
         failUrl: `${window.location.origin}/order/fail`,
       });
     } catch (e) {
